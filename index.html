@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Personal Expense Analysis & Prediction</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <h1>Personal Expense Analysis & Prediction System</h1>
+  <p>Track spending, understand patterns, and estimate next month's expenses.</p>
+</header>
+
+<main>
+  <section class="cards">
+    <div class="card"><span>Total Expenses</span><strong>₹{{ "%.2f"|format(total) }}</strong></div>
+    <div class="card"><span>Transactions</span><strong>{{ transactions }}</strong></div>
+    <div class="card"><span>Predicted Next Month</span><strong>₹{{ "%.2f"|format(forecast) }}</strong></div>
+  </section>
+
+  <section class="panel">
+    <h2>Add Expense</h2>
+    <form id="expenseForm">
+      <input type="date" name="date" required>
+      <select name="category" required>
+        <option value="">Category</option>
+        <option>Food</option><option>Transport</option><option>Shopping</option>
+        <option>Bills</option><option>Entertainment</option><option>Health</option>
+        <option>Education</option><option>Other</option>
+      </select>
+      <input type="number" name="amount" min="0.01" step="0.01" placeholder="Amount" required>
+      <input type="text" name="description" placeholder="Description">
+      <button type="submit">Add Expense</button>
+    </form>
+    <p id="msg"></p>
+  </section>
+
+  <section class="grid">
+    <div class="panel">
+      <h2>Category Summary</h2>
+      <table>
+        <tr><th>Category</th><th>Amount</th></tr>
+        {% for row in categories %}
+        <tr><td>{{ row.Category }}</td><td>₹{{ "%.2f"|format(row.Amount) }}</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <div class="panel">
+      <h2>Monthly Summary</h2>
+      <table>
+        <tr><th>Month</th><th>Amount</th></tr>
+        {% for row in monthly %}
+        <tr><td>{{ row.Month }}</td><td>₹{{ "%.2f"|format(row.Amount) }}</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Recent Transactions</h2>
+    <table>
+      <tr><th>Date</th><th>Category</th><th>Amount</th><th>Description</th></tr>
+      {% for row in expenses %}
+      <tr><td>{{ row.Date }}</td><td>{{ row.Category }}</td><td>₹{{ "%.2f"|format(row.Amount) }}</td><td>{{ row.Description }}</td></tr>
+      {% endfor %}
+    </table>
+  </section>
+</main>
+
+<script>
+document.getElementById("expenseForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const response = await fetch("/add", {method:"POST", body:new FormData(e.target)});
+  const data = await response.json();
+  document.getElementById("msg").textContent = data.success
+    ? "Expense added successfully. Refreshing..."
+    : data.message;
+  if (data.success) setTimeout(() => location.reload(), 700);
+});
+</script>
+</body>
+</html>
